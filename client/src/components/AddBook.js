@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
-import { getAuthorsQuery } from '../queries/queries';
+import { graphql, compose } from 'react-apollo';
+import { getAuthorsQuery, addBookMutation, getBooksQuery } from '../queries/queries';
 
 class AddBook extends Component {
-  displayAuthors() {
-    const data = this.props.data;
-    if (data.loading) {
-      return <option disabled>Loading Authors</option>;
-    } else {
-      return data.authors.map((author) => (
-        <option key={author.id} value={author.id}>
-          {author.name}
-        </option>
-      ));
-    }
-  }
+  // displayAuthors() {
+  //   const data = this.props.getAuthorsQuery;
+  //   if (data.loading) {
+  //     return <option disabled>Loading Authors</option>;
+  //   } else {
+  //     return data.authors.map((author) => (
+  //       <option key={author.id} value={author.id}>
+  //         {author.name}
+  //       </option>
+  //     ));
+  //   }
+  // }
   constructor(props) {
     super(props);
     this.state = {
@@ -27,7 +27,14 @@ class AddBook extends Component {
   }
   submitHandler(e) {
     e.preventDefault();
-    console.log(this.state);
+    this.props.addBookMutation({
+      variables: {
+        name: this.state.name,
+        genre: this.state.genre,
+        authorId: this.state.authorId
+      },
+      refetchQueried: [{query: getBooksQuery}]
+    });
   }
   changeHandler(e) {
     if (e.target.id === 'name') {
@@ -61,4 +68,12 @@ class AddBook extends Component {
   }
 }
 
-export default graphql(getAuthorsQuery)(AddBook);
+//export default graphql(getAuthorsQuery)(AddBook);
+export default compose(
+  graphql(getAuthorsQuery, {
+    name: 'getAuthorsQuery'
+  }),
+  graphql(addBookMutation, {
+    name: 'addBookMutation'
+  })
+)(AddBook);
